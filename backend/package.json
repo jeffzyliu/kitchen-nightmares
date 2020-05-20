@@ -1,0 +1,26 @@
+{
+  "name": "kitchen-nightmares",
+  "version": "1.0.0",
+  "description": "cs61 final project",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "npx nodemon server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jeffzyliu/kitchen-nightmares.git"
+  },
+  "author": "Jeff Liu, Alex Feng, Celina Tala, Arjun Srinivasan",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jeffzyliu/kitchen-nightmares/issues"
+  },
+  "homepage": "https://github.com/jeffzyliu/kitchen-nightmares#readme",
+  "dependencies": {
+    "bcrypt": "^4.0.1",
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "mysql2": "^2.1.0"
+  }
+}
