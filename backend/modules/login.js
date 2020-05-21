@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const env = require("../env"); // CHANGE THIS TO HEROKU FOR DEPLOY MODE AND LOCAL FOR TEST MODE
 const config = require("../config")[env];
 const db = config.database.database;
-const { connection } = require("./sqlconnection");
+const connection = require("./sqlconnection");
 
 /**
  * Core authentication middleware for users

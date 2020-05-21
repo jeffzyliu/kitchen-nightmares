@@ -30,7 +30,10 @@ const db = config.database.database;
  *      RestaurantID (if owner login mode)
  */
 miscRouter.get("/login", userLogin, async (req, res) => {
-    if (!isOwnerLogin) res.send(JSON.stringify({ status: 200, error: null, UserID: req.UserID }));
+    if (!req.body.isOwnerLogin) {
+        res.send(JSON.stringify({ status: 200, error: null, UserID: req.UserID }));
+        return;
+    }
     let results, fields;
     // try to pull the userID and password from the database that matches username
     try {
@@ -102,9 +105,9 @@ miscRouter.post("/register", async (req, res) => {
                 req.body.LastName,
             ]
         );
-    } catch (err) {
+    } catch (error) {
         // duplicate username, bad request, or other errors
-        if (err.errno == 1062) {
+        if (error.errno == 1062) {
             console.log("duplicate username rejected");
             res.send(JSON.stringify({ status: 1000, error: "duplicate username" }));
         } else {
