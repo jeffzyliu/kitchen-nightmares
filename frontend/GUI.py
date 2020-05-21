@@ -45,9 +45,9 @@ def get_meal():
     u = Toplevel()
     u.geometry('400x200')
     Label(u, text = "Get the last 20 meals or filter by date", font = ("Times New Roman", 18)).grid(row = 0, column = 2)
-    Button(u, text = "Get All").grid(row = 1, column = 0)
+    Button(u, text = "Get All").grid(row = 2, column = 0)
     cal = DateEntry(u)
-    cal.grid(row = 2, column = 0)
+    cal.grid(row = 1, column = 0)
     print(cal.get_date())
 
 
