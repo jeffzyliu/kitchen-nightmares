@@ -36,7 +36,9 @@ app.get("/", (req, res) => {
 const miscRouter = require("./routes/misc");
 const mealsRouter = require("./routes/meals");
 const restaurantsRouter = require("./routes/restaurants");
+const dataRouter = require("./routes/data");
 
 app.use("/", miscRouter);
 app.use("/meals", mealsRouter);
 app.use("/restaurants", restaurantsRouter);
+app.use("/", dataRouter);

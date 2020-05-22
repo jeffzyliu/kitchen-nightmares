@@ -13,6 +13,8 @@ const connection = require("./sqlconnection");
 /**
  * Core authentication middleware for users
  *
+ * ! stores the UserID in req.UserID
+ *
  * @param {*} req standard req, needs a body w/ username and password
  * @param {*} res response if an error message should be sent
  * @param {*} next standard to pass on execution to next middleware
@@ -51,12 +53,15 @@ const userLogin = async (req, res, next) => {
     }
     // correct pass
     console.log(req.body.Username + " login success");
+    //! stores the UserID in req.UserID
     req.UserID = results[0].UserID;
     next();
 };
 
 /**
  * Core authentication middleware for restaurant owners
+ *
+ * ! stores the RestaurantID in req.RestaurantID
  *
  * @param {*} req standard req, needs a body w/ username, password, restaurantID
  * @param {*} res response if an error message should be sent
@@ -107,6 +112,7 @@ const ownerLogin = async (req, res, next) => {
     }
     // correct pass
     console.log(req.body.Username + " login success");
+    //! stores the RestaurantID in req.RestaurantID
     req.RestaurantID = results[0].RestaurantID;
     next();
 };

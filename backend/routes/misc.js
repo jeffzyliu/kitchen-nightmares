@@ -159,4 +159,25 @@ miscRouter.get("/foods/:RestaurantName", userLogin, async (req, res) => {
     );
 });
 
+//TODO add GET /mealfoods/:date as last step
+/* 
+all foods in a day sorted by meal category(client will give option for current or enter in text boxes) (for inserts / deletes by ID)
+
+Send to server: {date} {header}
+
+select transactionID, date, category, restaurantname, foodName 
+from all tables natural joined
+limit 30
+
+Send back to client: {
+	Response: [
+		Date: some date data type that we used
+		TransactionID: number,
+		MealCategory: string,
+		RestaurantName: string,
+		FoodName: string
+    ]
+}
+ */
+
 module.exports = miscRouter;
