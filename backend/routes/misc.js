@@ -7,13 +7,9 @@ miscRouter.use(bodyParser.json());
 // password setup
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
-// env setup
-const env = require("../env");
-const config = require("../config")[env];
 
-const { userLogin, ownerLogin } = require("../modules/login");
+const { userLogin } = require("../modules/login");
 const connection = require("../modules/sqlconnection");
-const db = config.database.database;
 
 /**
  * test logging in a user or an owner, also returns the ID info for the client to store
@@ -38,7 +34,7 @@ miscRouter.get("/login", userLogin, async (req, res) => {
     // try to pull the userID and password from the database that matches username
     try {
         [results, fields] = await connection.execute(
-            "SELECT * FROM " + db + ".Restaurants WHERE OwnerID = ?",
+            "SELECT * FROM Restaurants WHERE OwnerID = ?",
             [req.UserID]
         );
     } catch (error) {
@@ -92,10 +88,11 @@ miscRouter.post("/register", async (req, res) => {
     let results, fields;
     try {
         // insert the new user
-        [results, fields] = await connection.execute(
-            "INSERT INTO " +
-                db +
-                ".Users (Username, HashedPassword, FirstName, MiddleInitial, LastName, TotalExpenditures) \
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "INSERT INTO Users (Username, HashedPassword, FirstName, MiddleInitial, LastName, TotalExpenditures) \
                 VALUES (?, ?, ?, ?, ?, 0)",
             [
                 req.body.Username,
@@ -137,12 +134,12 @@ miscRouter.get("/foods/:RestaurantName", userLogin, async (req, res) => {
     console.log(req.params);
     let results, fields;
     try {
-        [results, fields] = await connection.execute(
-            "SELECT FoodID, FoodName, FoodPrice FROM " +
-                db +
-                ".Foods NATURAL JOIN " +
-                db +
-                ".Restaurants WHERE RestaurantName LIKE ? AND OnMenu = TRUE",
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT FoodID, FoodName, FoodPrice FROM Foods NATURAL JOIN \
+                Restaurants WHERE RestaurantName LIKE ? AND OnMenu = TRUE",
             [req.params.RestaurantName]
         );
     } catch (error) {
