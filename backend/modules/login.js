@@ -5,9 +5,6 @@
 // password setup
 const bcrypt = require("bcrypt");
 // env setup
-const env = require("../env"); // CHANGE THIS TO HEROKU FOR DEPLOY MODE AND LOCAL FOR TEST MODE
-const config = require("../config")[env];
-const db = config.database.database;
 const connection = require("./sqlconnection");
 
 /**
@@ -29,8 +26,11 @@ const userLogin = async (req, res, next) => {
     let results, fields;
     // try to pull the userID and password from the database that matches username
     try {
-        [results, fields] = await connection.execute(
-            "SELECT UserID, HashedPassword FROM " + db + ".Users WHERE Username LIKE ?",
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT UserID, HashedPassword FROM Users WHERE Username LIKE ?",
             [req.body.Username]
         );
     } catch (error) {
@@ -80,16 +80,16 @@ const ownerLogin = async (req, res, next) => {
         res.send(JSON.stringify({ status: 401, error: "login invalid" }));
         return false;
     }
+    console.log(req.body);
     let results, fields;
     // try to pull the userID and password from the database that matches username and restaurantID
     try {
-        [results, fields] = await connection.execute(
-            "SELECT UserID, HashedPassword FROM " +
-                db +
-                ".Users NATURAL JOIN " +
-                db +
-                ".Restaurants" +
-                "WHERE Username LIKE ? AND RestaurantID = ?",
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT UserID, HashedPassword FROM Users NATURAL JOIN Restaurants \
+                WHERE Username LIKE ? AND RestaurantID = ?",
             [req.body.Username, req.body.RestaurantID]
         );
     } catch (error) {
