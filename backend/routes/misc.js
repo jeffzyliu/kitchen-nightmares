@@ -147,13 +147,7 @@ miscRouter.get("/foods/:RestaurantName", userLogin, async (req, res) => {
         res.send(JSON.stringify({ status: 500, error: "internal server error" }));
         return;
     }
-    res.send(
-        JSON.stringify({
-            status: 200,
-            error: null,
-            response: results,
-        })
-    );
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
 });
 
 //TODO add GET /mealfoods/:date as last step

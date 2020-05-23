@@ -7,15 +7,18 @@ restaurantsRouter.use(bodyParser.json());
 const { ownerLogin } = require("../modules/login");
 const connection = require("../modules/sqlconnection");
 
-// TODO GET /restaurants/foods - get list of all foods and prices
-/*
-Send: {
-	(header)
-}
-Response: {
-	[ {FoodID, FoodName, FoodPrice}... ]
-}
-*/
+/**
+ * GET /restaurants/foods
+ * gets a list of all foods and prices at this restaurant
+ *
+ * @request
+ *      Username (of a valid owner)
+ *      Password
+ *      RestaurantID
+ *
+ * @response
+ *      [ { FoodID, FoodName, FoodPrice }... ]
+ */
 restaurantsRouter.get("/foods", ownerLogin, async (req, res) => {
     let results, fields;
     // get some foods
@@ -79,27 +82,71 @@ restaurantsRouter.post("/foods", ownerLogin, async (req, res) => {
     res.send(JSON.stringify({ status: 201, error: null, response: results }));
 });
 
-// TODO PUT /restaurants/foods/:FoodID - update the price of a food
-/*
-Send: {
-	(header), 
-	NewPrice: number
-}
-Update Foods (FoodPrice) values (req.body.NewPrice) where FoodID = req.params.FoodID and RestaurantID = req.RestaurantID
-Response: {
-	Some happy go lucky success message
-} 
-*/
+/**
+ * PUT /restaurants/foods/:FoodID
+ * update the price of a food
+ *
+ * @request params: FoodID
+ *      body:
+ *      Username (of a valid owner)
+ *      Password
+ *      RestaurantID
+ *      NewPrice
+ *
+ * @response
+ *      200 success message if success
+ *      401 ish for various login errors
+ *      500 for uncaught sever error
+ */
+restaurantsRouter.put("/foods/:FoodID", ownerLogin, async (req, res) => {
+    console.log(req.params);
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "UPDATE Foods SET FoodPrice = ? WHERE FoodID = ? AND RestaurantID = ?",
+            [req.body.NewPrice, req.params.FoodID, req.RestaurantID]
+        );
+    } catch (error) {
+        console.log(error);
+        res.send(JSON.stringify({ status: 500, error: "bad request format" }));
+        return;
+    }
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+});
 
-// TODO DELETE /restaurants/foods/:FoodID -- take food item off the menu (put disguised as a delete)
-/*
-send: {
-	(header),
-}
-Update OnMenu to False in Foods where FoodID = req.paramsFoodID and RestaurantID = req.RestaurantID
-Send back: {
-	Some confirmation stuff
-}
-*/
+/**
+ * DELETE /restaurants/foods/:FoodID
+ * -- take food item off the menu (update disguised as a delete)
+ *
+ * @request params: FoodID
+ *      body:
+ *      Username (of a valid owner)
+ *
+ * @response
+ *      200 success message if success
+ *      401 ish for various login errors
+ *      500 for uncaught sever error
+ */
+restaurantsRouter.delete("/foods/:FoodID", ownerLogin, async (req, res) => {
+    console.log(req.params);
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "UPDATE Foods SET OnMenu = false WHERE FoodID = ? AND RestaurantID = ?",
+            [req.params.FoodID, req.RestaurantID]
+        );
+    } catch (error) {
+        console.log(error);
+        res.send(JSON.stringify({ status: 500, error: "bad request format" }));
+        return;
+    }
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+});
 
 module.exports = restaurantsRouter;
