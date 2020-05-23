@@ -113,7 +113,7 @@ const ownerLogin = async (req, res, next) => {
     // correct pass
     console.log(req.body.Username + " login success");
     //! stores the RestaurantID in req.RestaurantID
-    req.RestaurantID = results[0].RestaurantID;
+    req.RestaurantID = req.body.RestaurantID;
     next();
 };
 

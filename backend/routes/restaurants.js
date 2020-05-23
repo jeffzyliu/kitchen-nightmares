@@ -16,19 +16,48 @@ Response: {
 	[ {FoodID, FoodName, FoodPrice}... ]
 }
 */
+restaurantsRouter.get("/foods", ownerLogin, async (req, res) => {
+    let results, fields;
+    // get some foods
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT FoodID, FoodName, FoodPrice FROM Foods WHERE RestaurantID = ? AND OnMenu",
+            [req.RestaurantID]
+        );
+    } catch (error) {
+        // something went wrong
+        console.log(error);
+        res.send(JSON.stringify({ status: 500, error: "internal server error" }));
+        return;
+    }
+    res.send(
+        JSON.stringify({
+            status: 200,
+            error: null,
+            response: results,
+        })
+    );
+});
 
-// TODO POST /restaurants/foods - add new foods to a restaurant’s list
-/*
-Send: {
-	(header),
-	FoodName: string,
-	FoodPrice: number
-}
-Insert into blah blah, use restaurantID in header
-Send back: {
-	Some confirmation stuff
-}
-*/
+/**
+ * POST /foods
+ * adds new foods to a restaurant's list
+ *
+ * @request
+ *      Username (of a valid owner)
+ *      Password
+ *      RestaurantID
+ *      FoodName
+ *      FoodPrice
+ *
+ * @response
+ *      201 success message if success  (response.insertId = new FoodID in schema)
+ *      401 ish for various login errors
+ *      500 for uncaught sever error
+ */
 restaurantsRouter.post("/foods", ownerLogin, async (req, res) => {
     let results, fields;
     // do an insert on foods
@@ -39,7 +68,7 @@ restaurantsRouter.post("/foods", ownerLogin, async (req, res) => {
         ] = await connection.execute(
             "INSERT INTO Foods (FoodName, FoodPrice, RestaurantID, OnMenu) \
             VALUES (?, ?, ?, true)",
-            [req.body.FoodName, req.body.FoodPrice, req.body.RestaurantID]
+            [req.body.FoodName, req.body.FoodPrice, req.RestaurantID]
         );
     } catch (error) {
         // bad format
