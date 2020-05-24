@@ -33,7 +33,35 @@ class Viz:
     '''
     # Input:
     def viz_user_spending(self, data):
-        return none
+
+        # Convert JSON data to Python list (fill in later)
+
+
+        # For now assume data is array of y, x
+        labels = data[0]
+        cost = data[1]
+        
+        # Create pandas dataframe
+        labeled_data = pd.DataFrame(cost).T
+        labeled_data.columns = labels
+
+        # set plot backgorund
+        sns.set(style="white", font_scale=.8)
+
+        # Set up the matplotlib figure
+        f, ax = plt.subplots(figsize=(15, 20))
+
+        # Generate a custom diverging colormap
+        cmap = sns.light_palette((210, 90, 60), input="husl", as_cmap=True)
+
+        #cbar_kws{"shrink": .25}
+        ax = sns.heatmap(labeled_data, cmap=cmap, linewidths=.01)
+
+        #plt.show()
+        plt.savefig('viz1.png',bbox_inches='tight')  # Save the final pie chart
+        plt.clf()
+
+        return
 
     '''
     Function to create heatmap ("viz.png") of restaurants weighted by frequency of meals at each restaurant.
@@ -46,10 +74,15 @@ class Viz:
 
         # Convert JSON data to Python list (fill in later)
 
+
         # For now assume data is array of y, x
         labels = data[0]
         freq = data[1]
         
+        # Create pandas dataframe
+        labeled_data = pd.DataFrame(freq).T
+        labeled_data.columns = labels
+
         # set plot backgorund
         sns.set(style="white", font_scale=.8)
 
@@ -59,7 +92,8 @@ class Viz:
         # Generate a custom diverging colormap
         cmap = sns.light_palette((210, 90, 60), input="husl", as_cmap=True)
 
-        ax = sns.heatmap(freq, cmap=cmap, linewidths=.01, cbar_kws{"shrink": .25})
+        #cbar_kws{"shrink": .25}
+        ax = sns.heatmap(labeled_data, cmap=cmap, linewidths=.01)
 
         #plt.show()
         plt.savefig('viz2.png',bbox_inches='tight')  # Save the final pie chart
@@ -128,9 +162,13 @@ class Viz:
 # Testing!
 
 # Some fake data to visualize
+data_1 = [["Indian Rest 1", "Indian Rest 2", "Indian Rest 3"], [100.35,22.67,36.34]]
+data_2 = [["Indian Rest 1", "Indian Rest 2", "Indian Rest 3"], [30,25,69]]
 data_3 = [["Naan","Dosa","Paneer","Bhatura","Butter chicken","Chana masala","Chaat"],[1,5,3,4,0,2,6]]
 data_4 = [["Naan","Dosa","Paneer","Bhatura","Butter chicken","Chana masala","Chaat"],[85.30,60.25,12.53,4.56,0,40.30,20.05]]
 
 myviz = Viz()                       # instantiate a Viz object
-myviz.viz_rez_quantity(data_3)       # call the appropriate viz method 
-myviz.viz_rest_money(data_4)       # call the appropriate viz method 
+myviz.viz_user_spending(data_1)     # call viz method 1
+myviz.viz_user_freq(data_2)         # call viz method 2
+myviz.viz_rez_quantity(data_3)      # call viz method 3
+myviz.viz_rest_money(data_4)        # call viz method 4
