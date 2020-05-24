@@ -5,13 +5,8 @@ const mealsRouter = express.Router();
 mealsRouter.use(bodyParser.urlencoded({ extended: true }));
 mealsRouter.use(bodyParser.json());
 
-// env setup
-const env = require("../env");
-const config = require("../config")[env];
-
-const { userLogin, ownerLogin } = require("../modules/login");
+const { userLogin } = require("../modules/login");
 const connection = require("../modules/sqlconnection");
-const db = config.database.database;
 
 // TODO consider making some stored procedures for these?
 
