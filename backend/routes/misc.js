@@ -128,7 +128,7 @@ miscRouter.post("/register", async (req, res) => {
  *      Password
  *
  * @response
- *      array of [FoodID, FoodName, FoodPrice]
+ *      array of [ { FoodID, FoodName, FoodPrice } ... ]
  */
 miscRouter.get("/foods/:RestaurantName", userLogin, async (req, res) => {
     console.log(req.params);
@@ -150,25 +150,39 @@ miscRouter.get("/foods/:RestaurantName", userLogin, async (req, res) => {
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
 });
 
-//TODO add GET /mealfoods/:date as last step
-/* 
-all foods in a day sorted by meal category(client will give option for current or enter in text boxes) (for inserts / deletes by ID)
-
-Send to server: {date} {header}
-
-select transactionID, date, category, restaurantname, foodName 
-from all tables natural joined
-limit 30
-
-Send back to client: {
-	Response: [
-		Date: some date data type that we used
-		TransactionID: number,
-		MealCategory: string,
-		RestaurantName: string,
-		FoodName: string
-    ]
-}
+/**
+ * GET /mealfoods/:date
+ * retrieves all foods in a given date sorted by meal category
+ * ! DATE FORMAT: YYYY-MM-DD (perhaps others work but I only tested this)
+ *
+ * @request params: date
+ * body:
+ *      Username
+ *      Password
+ *
+ * @response
+ *      array of [ { TransactionID, TransactionCategory, RestaurantName, FoodName } ... ]
  */
+miscRouter.get("/mealfoods/:date", userLogin, async (req, res) => {
+    console.log(req.params);
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT TransactionID, TransactionCategory, RestaurantName, FoodName \
+            FROM Transactions NATURAL JOIN Foods NATURAL JOIN Restaurants \
+            WHERE UserID = ? AND TransactionDate = ? \
+            ORDER BY TransactionCategory",
+            [req.UserID, req.params.date]
+        );
+    } catch (error) {
+        console.log(error);
+        res.send(JSON.stringify({ status: 500, error: "internal server error" }));
+        return;
+    }
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+});
 
 module.exports = miscRouter;
