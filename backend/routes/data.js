@@ -1,9 +1,9 @@
 // imports
 const express = require("express");
 const bodyParser = require("body-parser");
-const mealsRouter = express.Router();
-mealsRouter.use(bodyParser.urlencoded({ extended: true }));
-mealsRouter.use(bodyParser.json());
+const dataRouter = express.Router();
+dataRouter.use(bodyParser.urlencoded({ extended: true }));
+dataRouter.use(bodyParser.json());
 
 const { userLogin, ownerLogin } = require("../modules/login");
 const connection = require("../modules/sqlconnection");
@@ -47,44 +47,70 @@ Send back: {
 }
 */
 
-// TODO /GET /restaurants/data/0 - visualize food items weighted by quantity purchased for a restaurant
-// TODO use ownerLogin
-// TODO make stored procedure?
-/* 
-Send: {header}
-
-select FoodName(or id), count (*) as FoodCount
-from (select *
-    from Foods
-    where RestaurantID = req.RestaurantID)
-group by FoodID
-
-send back: {
-    Response: [
-        FoodName: string,
-        FoodCount: number
-    ]
-}
+/**
+ * GET /restaurants/data/0
+ * visualize food items weighted by quantity purchased for a certain restaurant
+ *
+ * @request
+ *      Username
+ *      Password
+ *
+ * @response
+ *      array of [ { FoodName, FoodCount } ... ]
  */
+dataRouter.get("/restaurants/data/0", ownerLogin, async (req, res) => {
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT FoodName, count(*) as FoodCount \
+            FROM (SELECT * \
+                FROM Foods NATURAL JOIN Transactions \
+                WHERE RestaurantID = ?) as FoodTransactions \
+            GROUP BY FoodName",
+            [req.RestaurantID]
+        );
+    } catch (error) {
+        console.log(error);
+        res.send(JSON.stringify({ status: 500, error: "internal server error" }));
+        return;
+    }
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+});
 
-// TODO GET /restaurants/data/1 - visualize foods weighted by total $ spent on each for a restaurant
-// TODO use ownerLogin
-// TODO make stored procedure?
-/*
-Send: {header}
-
-select foodName(or id), sum(FoodPrice) as TotalSum
-from (select *
-    from Foods
-    where RestaurantID=restaurantID)
-group by FoodID 
-
-Send back: {
-	Response: [
-		FoodName: string,
-		TotalSum: number 
-	]
-}
+/**
+ * GET /restaurants/data/1
+ * visualize food items weighted by total revenue per each food item for a restaurant
+ *
+ * @request
+ *      Username
+ *      Password
+ *
+ * @response
+ *      array of [ { FoodName, FoodRevenue } ... ]
  */
+dataRouter.get("/restaurants/data/1", ownerLogin, async (req, res) => {
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT FoodName, sum(TransactionPrice) as FoodRevenue \
+             FROM (SELECT * \
+                FROM Foods NATURAL JOIN Transactions \
+                WHERE RestaurantID = ?) as FoodTransactions \
+            GROUP BY FoodName",
+            [req.RestaurantID]
+        );
+    } catch (error) {
+        console.log(error);
+        res.send(JSON.stringify({ status: 500, error: "internal server error" }));
+        return;
+    }
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+});
 
-module.exports = mealsRouter;
+module.exports = dataRouter;

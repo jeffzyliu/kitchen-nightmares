@@ -128,7 +128,7 @@ miscRouter.post("/register", async (req, res) => {
  *      Password
  *
  * @response
- *      array of [FoodID, FoodName, FoodPrice]
+ *      array of [ { FoodID, FoodName, FoodPrice } ... ]
  */
 miscRouter.get("/foods/:RestaurantName", userLogin, async (req, res) => {
     console.log(req.params);
