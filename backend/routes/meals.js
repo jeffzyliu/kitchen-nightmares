@@ -9,14 +9,14 @@ mealsRouter.use(bodyParser.json());
 const env = require("../env");
 const config = require("../config")[env];
 
-// const { userLogin, ownerLogin } = require("../modules/login");
+const { userLogin, ownerLogin } = require("../modules/login");
 const connection = require("../modules/sqlconnection");
 const db = config.database.database;
 
 // TODO consider making some stored procedures for these?
 
 // TODO GET /meals/specific or something, need to create a new route for searching up a specific meal
-mealsRouter.get("/meals/specific", function (req,res) {
+mealsRouter.get("/specific", function (req,res) {
 	console.log("hi");
 	connection.query(
 		"SELECT TransactionID from Transactions \
@@ -26,7 +26,10 @@ mealsRouter.get("/meals/specific", function (req,res) {
 		[req.body.FoodName, req.body.TransactionDate, req.body.TransactionCategory, req.UserID], function (error, results, fields) {
 			if (error) throw error;
 			res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-		});
+	})
+	.catch( (err) => {
+		res.send(JSON.stringify({"status": 205, "error": err}));
+	});
 });
 
 // TODO GET /meals/ - last 20 meals
@@ -48,7 +51,7 @@ Send back to client: {
     ]
 }
 */
-mealsRouter.get("/meals", function (req,res) {
+mealsRouter.get("/", userLogin, function (req,res) {
 	console.log("hi");
 	connection.query(
 		"SELECT TransactionDate AS Date, TransactionCategory AS MealCategory, RestaurantName, SUM(FoodPrice) AS Cost \
@@ -61,8 +64,12 @@ mealsRouter.get("/meals", function (req,res) {
 		LIMIT 20", 
 		[req.UserID], function (error, results, fields) {
 			if (error) throw error;
+			console.log(results);
 			res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-		});
+	})
+	.catch( (err) => {
+		res.send(JSON.stringify({"status": 205, "error": err}));
+	});
 });
 // TODO GET /meals/:date - all meals in a day (client will give option for current or enter in text boxes)
 /*
@@ -83,7 +90,7 @@ Send back to client: {
     ]
 }
 */
-mealsRouter.get("/meals/:date", function (req,res) {
+mealsRouter.get("/:date", userLogin, function (req,res) {
 	console.log("hi");
 	connection.query(
 		"SELECT TransactionDate AS Date, TransactionCategory AS MealCategory, RestaurantName, SUM(FoodPrice) AS Cost \
@@ -97,7 +104,7 @@ mealsRouter.get("/meals/:date", function (req,res) {
 		[req.UserID, req.params.date], function (error, results, fields) {
 			if (error) throw error;
 			res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-		});
+	});
 });
 
 // TODO POST /meals - add a meal (foods dropdown from GET /foods, mealCategory from dropdown)
@@ -116,7 +123,7 @@ Send back: {
 	Whatever error code stuff! Not much otherwise needed
 }
 */
-mealsRouter.post("/meals", function (req,res) {
+mealsRouter.post("/", userLogin, function (req,res) {
 	console.log("hi");
 	connection.query(
 		"INSERT INTO Transactions (TransactionDate, TransactionCategory, UserID, FoodID) \
@@ -124,7 +131,7 @@ mealsRouter.post("/meals", function (req,res) {
 		[req.body.TransactionDate, req.body.TransactionCategory, req.UserID, req.body.FoodID], function (error, results, fields) {
 			if (error) throw error;
 			res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-		});
+	});
 });
 
 // TODO PUT /meals/:TransactionID to modify a meal
@@ -137,7 +144,7 @@ Send to server: {TransactionID} {
 }
 (update transactions (foodID) values (newFoodID) where transactionID = req.params.TransactionID)
 */
-mealsRouter.put("/meals/TransactionID", function (req,res) {
+mealsRouter.put("/TransactionID", userLogin, function (req,res) {
 	console.log("hi");
 	connection.query(
 		"UPDATE Transactions \
@@ -146,7 +153,7 @@ mealsRouter.put("/meals/TransactionID", function (req,res) {
 		[req.body.FoodID, req.params.TransactionID], function (error, results, fields) {
 			if (error) throw error;
 			res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-		});
+	});
 });
 
 // TODO DELETE /meals/:TransactionID  (the user needs to use a GET to find the right TransactionID first before doing anything meaningful through PUT)
@@ -160,7 +167,7 @@ where TransactionID = req.params.TransactionID
 
 send back some trivial things from a delete, check my other code for that
 */
-mealsRouter.delete("/meals/TransactionID", function (req,res) {
+mealsRouter.delete("/TransactionID", userLogin, function (req,res) {
 	console.log("hi");
 	connection.query(
 		"DELETE FROM Transactions \
@@ -168,7 +175,7 @@ mealsRouter.delete("/meals/TransactionID", function (req,res) {
 		[req.params.TransactionID], function (error, results, fields) {
 			if (error) throw error;
 			res.send(JSON.stringify({"status": 200, "error": null, "response": results}));
-		});
+	});
 });
 
 module.exports = mealsRouter;
