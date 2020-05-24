@@ -159,6 +159,7 @@ Send to server: {date} {header}
 select transactionID, date, category, restaurantname, foodName 
 from all tables natural joined
 limit 30
+! date should be YYYY-MM-DD format
 
 Send back to client: {
 	Response: [
@@ -170,5 +171,9 @@ Send back to client: {
     ]
 }
  */
+miscRouter.get("/mealfoods/:date", userLogin, async (req, res) => {
+    console.log(req.params);
+    res.send(JSON.stringify({ status: 200, error: null }));
+});
 
 module.exports = miscRouter;

@@ -8,44 +8,70 @@ dataRouter.use(bodyParser.json());
 const { userLogin, ownerLogin } = require("../modules/login");
 const connection = require("../modules/sqlconnection");
 
-// TODO GET /meals/data/0 - visualize cost per restaurant on a map for a user
-// TODO use userLogin
-// TODO make stored procedure?
-/*
-Send: {header}
+/**
+ * /GET /meals/data/0
+ * visualize unique transaction count per restaurant on a map for a user
+ *
+ * @request
+ *      Username
+ *      Password
+ *
+ * @response
+ *      array of [ { RestaurantName, MealCount } ... ]
+ */
+dataRouter.get("/meals/data/0", userLogin, async (req, res) => {
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT RestaurantName, SUM(TransactionPrice) AS MoneySpent \
+            FROM Transactions NATURAL JOIN Foods NATURAL JOIN Restaurants \
+            WHERE UserID = ? \
+            GROUP BY RestaurantName",
+            [req.UserID]
+        );
+    } catch (error) {
+        console.log(error);
+        res.send(JSON.stringify({ status: 500, error: "internal server error" }));
+        return;
+    }
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+});
 
-select sum(cost) 
-from all natural join 
-where UserID = req.body.UserID 
-group by RestaurantID(or name)
-
-Send back: {
-	Response: [
-        RestaurantName,
-        TotalSpent
-    ]
-}
-*/
-
-// TODO /GET /meals/data/1 - visualize unique transaction count per restaurant on a map for a user
-// TODO use userLogin
-// TODO make stored procedure?
-/*
-Send: {header}
-
-select restaurantName (or id), count (*) 
-from (select distinct transactionCategory, transactionDate, restaurantName
-    from transactions 
-    where userID = userID) 
-group by restaurantName
-
-Send back: {
-	Response: [
-        RestaurantName,
-        MealCount
-    ]
-}
-*/
+/**
+ * /GET /meals/data/1
+ * visualize unique transaction count per restaurant on a map for a user
+ *
+ * @request
+ *      Username
+ *      Password
+ *
+ * @response
+ *      array of [ { RestaurantName, MealCount } ... ]
+ */
+dataRouter.get("/meals/data/1", userLogin, async (req, res) => {
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT RestaurantName, count(*) AS MealCount \
+            FROM (SELECT DISTINCT TransactionCategory, TransactionDate, RestaurantName \
+                FROM Transactions NATURAL JOIN Foods NATURAL JOIN Restaurants \
+                WHERE UserID = ?) AS UniqueTable \
+            GROUP BY RestaurantName",
+            [req.UserID]
+        );
+    } catch (error) {
+        console.log(error);
+        res.send(JSON.stringify({ status: 500, error: "internal server error" }));
+        return;
+    }
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+});
 
 /**
  * GET /restaurants/data/0
