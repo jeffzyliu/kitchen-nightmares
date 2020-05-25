@@ -46,7 +46,7 @@ restaurantsRouter.get("/foods", ownerLogin, async (req, res) => {
 });
 
 /**
- * POST /foods
+ * POST /restaurants/foods
  * adds new foods to a restaurant's list
  *
  * @request
@@ -59,7 +59,7 @@ restaurantsRouter.get("/foods", ownerLogin, async (req, res) => {
  * @response
  *      201 success message if success  (response.insertId = new FoodID in schema)
  *      401 ish for various login errors
- *      500 for uncaught sever error
+ *      500 for uncaught server error
  */
 restaurantsRouter.post("/foods", ownerLogin, async (req, res) => {
     let results, fields;

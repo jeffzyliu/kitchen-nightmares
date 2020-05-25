@@ -185,4 +185,42 @@ miscRouter.get("/mealfoods/:date", userLogin, async (req, res) => {
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
 });
 
+/**
+ * GET /expenditures
+ * retrieves expenditures for a currently logged in user
+ *
+ * @request
+ *      Username
+ *      Password
+ *
+ * @response
+ *      various status codes
+ *      TotalExpenditures: number
+ */
+miscRouter.get("/expenditures", userLogin, async (req, res) => {
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT TotalExpenditures \
+            FROM Users \
+            WHERE UserID = ?",
+            [req.UserID]
+        );
+    } catch (error) {
+        console.log(error);
+        res.send(JSON.stringify({ status: 500, error: "internal server error" }));
+        return;
+    }
+    res.send(
+        JSON.stringify({
+            status: 200,
+            error: null,
+            TotalExpenditures: results[0].TotalExpenditures,
+        })
+    );
+});
+
 module.exports = miscRouter;

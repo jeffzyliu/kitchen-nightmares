@@ -17,7 +17,7 @@ const connection = require("../modules/sqlconnection");
  *      Password
  *
  * @response
- *      array of [ { RestaurantName, MealCount } ... ]
+ *      array of [ { RestaurantName, MoneySpent } ... ]
  */
 dataRouter.get("/meals/data/0", userLogin, async (req, res) => {
     let results, fields;
