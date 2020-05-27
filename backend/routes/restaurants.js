@@ -124,6 +124,8 @@ restaurantsRouter.put("/foods/:FoodID", ownerLogin, async (req, res) => {
  * @request params: FoodID
  *      body:
  *      Username (of a valid owner)
+ *      Password
+ *      RestaurantID
  *
  * @response
  *      200 success message if success

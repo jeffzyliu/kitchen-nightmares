@@ -88,7 +88,7 @@ const ownerLogin = async (req, res, next) => {
             results,
             fields,
         ] = await connection.execute(
-            "SELECT UserID, HashedPassword FROM Users NATURAL JOIN Restaurants \
+            "SELECT UserID, HashedPassword FROM Users INNER JOIN Restaurants ON OwnerID = UserID \
                 WHERE Username LIKE ? AND RestaurantID = ?",
             [req.body.Username, req.body.RestaurantID]
         );
