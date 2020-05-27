@@ -80,6 +80,7 @@ dataRouter.get("/meals/data/1", userLogin, async (req, res) => {
  * @request
  *      Username
  *      Password
+ *      RestaurantID
  *
  * @response
  *      array of [ { FoodName, FoodCount } ... ]
@@ -113,6 +114,7 @@ dataRouter.get("/restaurants/data/0", ownerLogin, async (req, res) => {
  * @request
  *      Username
  *      Password
+ *      RestaurantID
  *
  * @response
  *      array of [ { FoodName, FoodRevenue } ... ]
