@@ -5,96 +5,163 @@ const mealsRouter = express.Router();
 mealsRouter.use(bodyParser.urlencoded({ extended: true }));
 mealsRouter.use(bodyParser.json());
 
-// env setup
-const env = require("../env");
-const config = require("../config")[env];
-
-const { userLogin, ownerLogin } = require("../modules/login");
+const { userLogin } = require("../modules/login");
 const connection = require("../modules/sqlconnection");
-const db = config.database.database;
 
-// TODO consider making some stored procedures for these?
+/**
+ * GET /meals
+ * get info on all meals
+ *
+ * @request
+ *
+ * @response
+ *      201 success message if success
+ *      205 for error getting info from database
+ * 		array [ { Date, MealCategory, RestaurantName, Cost }... ]
+ * 			date format YYYY-MM-DD
+ */
+mealsRouter.get("/", userLogin, async (req, res) => {
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT DATE_FORMAT(TransactionDate, '%Y-%m-%d') AS Date, TransactionCategory AS MealCategory, RestaurantName, SUM(FoodPrice) AS Cost \
+			FROM Users \
+			JOIN Transactions ON Users.UserID = Transactions.UserID \
+			JOIN Foods ON Transactions.FoodID = Foods.FoodID \
+			JOIN Restaurants ON Foods.RestaurantID = Restaurants.RestaurantID \
+			WHERE Users.UserID = ? \
+			GROUP BY Date, MealCategory, RestaurantName \
+			LIMIT 20",
+            [req.UserID]
+        );
+    } catch (error) {
+        res.send(JSON.stringify({ status: 205, error: error }));
+    }
+    res.send(JSON.stringify({ status: 201, error: null, response: results }));
+});
 
-// TODO GET /meals/specific or something, need to create a new route for searching up a specific meal
+/**
+ * GET /meals/:date
+ * get a specific meal's info
+ *
+ * @request params: date
+ *
+ * @response
+ *      201 success message if success
+ *      205 for error getting info from database
+ * 		{ Date, MealCategory, RestaurantName, Cost }
+ */
+mealsRouter.get("/:date", userLogin, async (req, res) => {
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT DATE_FORMAT(TransactionDate, '%Y-%m-%d') AS Date, TransactionCategory AS MealCategory, RestaurantName, SUM(FoodPrice) AS Cost \
+			FROM Users \
+			JOIN Transactions ON Users.UserID = Transactions.UserID \
+			JOIN Foods ON Transactions.FoodID = Foods.FoodID \
+			JOIN Restaurants ON Foods.RestaurantID = Restaurants.RestaurantID \
+			WHERE Users.UserID = ? AND Transactions.TransactionDate = ? \
+			GROUP BY Date, MealCategory, RestaurantName \
+			LIMIT 20",
+            [req.UserID, req.params.date]
+        );
+    } catch (error) {
+        res.send(JSON.stringify({ status: 205, error: error }));
+    }
+    res.send(JSON.stringify({ status: 201, error: null, response: results }));
+});
 
-// TODO GET /meals/ - last 20 meals
-/*
-Send to server: {header}
+/**
+ * POST /meals
+ * create a new meal
+ *
+ * @request
+ *		body:
+ *		TransactionDate
+ *		TransactionCategory
+ *		FoodID
+ *
+ * @response
+ *      201 success message if success
+ *      205 for error adding into database
+ */
+mealsRouter.post("/", userLogin, async (req, res) => {
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "INSERT INTO Transactions (TransactionDate, TransactionCategory, UserID, FoodID) \
+			VALUES (?, ?, ?, ?)",
+            [req.body.TransactionDate, req.body.TransactionCategory, req.UserID, req.body.FoodID]
+        );
+    } catch (error) {
+        res.send(JSON.stringify({ status: 205, error: error }));
+    }
+    res.send(JSON.stringify({ status: 201, error: null, response: results }));
+});
 
-select date, category, restaurantname, sum(cost) 
-from all tables natural joined
-group by date, category, restaurantname
-where UserID = req.UserID
-limit 20
+/**
+ * PUT /meals/:TransactionID
+ * updates a meal's food item
+ *
+ * @request params: TransactionID
+ * 		body:
+ * 		FoodID (new FoodID)
+ *
+ * @response
+ *      201 success message if success
+ *      205 for error updating from database
+ */
+mealsRouter.put("/:TransactionID", userLogin, async (req, res) => {
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "UPDATE Transactions \
+			SET FoodID = ? \
+			WHERE TransactionID= ?",
+            [req.body.FoodID, req.params.TransactionID]
+        );
+    } catch (error) {
+        res.send(JSON.stringify({ status: 205, error: error }));
+    }
+    res.send(JSON.stringify({ status: 201, error: null, response: results }));
+});
 
-Send back to client: {
-	Response: [
-		Date: some date data type that we used
-		MealCategory: string,
-		RestaurantName: string,
-		Cost: Number
-    ]
-}
-*/
-
-// TODO GET /meals/:date - all meals in a day (client will give option for current or enter in text boxes)
-/*
-Send to server: {date} {header}
-
-select date, category, restaurantname, sum(cost) 
-from all tables natural joined
-where date = req.body.date
-group by date, category, restaurantname
-limit 20
-
-Send back to client: {
-	Response: [
-		Date: some date data type that we used
-		MealCategory: string,
-		RestaurantName: string,
-		Cost: Number
-    ]
-}
-*/
-
-// TODO POST /meals - add a meal (foods dropdown from GET /foods, mealCategory from dropdown)
-/*
-Send to server: {
-	{header},
-	RestaurantName: string,
-	TransactionDate: datetime whatever,
-	FoodID: number,
-	TransactionCategory: string
-}
-
-SQL query TBD (keep in mind that req.UserID contains the ID of the currently logged in user)
-
-Send back: {
-	Whatever error code stuff! Not much otherwise needed
-}
-*/
-
-// TODO PUT /meals/:TransactionID to modify a meal
-// (the user needs to use a GET to find the right TransactionID first before doing anything meaningful through PUT)
-// (the client application will then call GET / foods /: restaurantName) to get the list of possible new foods)
-/*
-Send to server: {TransactionID} {
-	(header),
-	NewFoodID: number
-}
-(update transactions (foodID) values (newFoodID) where transactionID = req.params.TransactionID)
-*/
-
-// TODO DELETE /meals/:TransactionID  (the user needs to use a GET to find the right TransactionID first before doing anything meaningful through PUT)
-/*
-Send to server: {
-    header,
-    TransactionID
-}
-delete from transactions 
-where TransactionID = req.params.TransactionID
-
-send back some trivial things from a delete, check my other code for that
-*/
+/**
+ * DELETE /meals/:TransactionID
+ * Deletes a meal
+ *
+ * @request params: TransactionID
+ *
+ * @response
+ *      201 success message if success
+ *      205 for error deleting from database
+ */
+mealsRouter.delete("/:TransactionID", userLogin, async (req, res) => {
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute("DELETE FROM Transactions \
+			WHERE TransactionID = ?", [
+            req.params.TransactionID,
+        ]);
+    } catch (error) {
+        res.send(JSON.stringify({ status: 205, error: error }));
+    }
+    res.send(JSON.stringify({ status: 201, error: null, response: results }));
+});
 
 module.exports = mealsRouter;
