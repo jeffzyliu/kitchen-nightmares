@@ -27,7 +27,7 @@ mealsRouter.get("/", userLogin, async (req, res) => {
             results,
             fields,
         ] = await connection.execute(
-            "SELECT DATE_FORMAT(TransactionDate, '%Y-%m-%d') AS Date, TransactionCategory AS MealCategory, RestaurantName, SUM(FoodPrice) AS Cost \
+            "SELECT DATE_FORMAT(TransactionDate, '%Y-%m-%d') AS Date, TransactionCategory AS MealCategory, RestaurantName, SUM(TransactionPrice) AS Cost \
 			FROM Users \
 			JOIN Transactions ON Users.UserID = Transactions.UserID \
 			JOIN Foods ON Transactions.FoodID = Foods.FoodID \
@@ -61,7 +61,7 @@ mealsRouter.get("/:date", userLogin, async (req, res) => {
             results,
             fields,
         ] = await connection.execute(
-            "SELECT DATE_FORMAT(TransactionDate, '%Y-%m-%d') AS Date, TransactionCategory AS MealCategory, RestaurantName, SUM(FoodPrice) AS Cost \
+            "SELECT DATE_FORMAT(TransactionDate, '%Y-%m-%d') AS Date, TransactionCategory AS MealCategory, RestaurantName, SUM(TransactionPrice) AS Cost \
 			FROM Users \
 			JOIN Transactions ON Users.UserID = Transactions.UserID \
 			JOIN Foods ON Transactions.FoodID = Foods.FoodID \

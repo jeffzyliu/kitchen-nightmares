@@ -161,7 +161,7 @@ miscRouter.get("/foods/:RestaurantName", userLogin, async (req, res) => {
  *      Password
  *
  * @response
- *      array of [ { TransactionID, TransactionCategory, RestaurantName, FoodName } ... ]
+ *      array of [ { Date, TransactionID, TransactionCategory, RestaurantName, FoodName } ... ]
  */
 miscRouter.get("/mealfoods/:date", userLogin, async (req, res) => {
     console.log(req.params);
@@ -171,11 +171,46 @@ miscRouter.get("/mealfoods/:date", userLogin, async (req, res) => {
             results,
             fields,
         ] = await connection.execute(
-            "SELECT TransactionID, TransactionCategory, RestaurantName, FoodName \
+            "SELECT DATE_FORMAT(TransactionDate, '%Y-%m-%d') AS Date, TransactionID, TransactionCategory, RestaurantName, FoodName \
             FROM Transactions NATURAL JOIN Foods NATURAL JOIN Restaurants \
             WHERE UserID = ? AND TransactionDate = ? \
             ORDER BY TransactionCategory",
             [req.UserID, req.params.date]
+        );
+    } catch (error) {
+        console.log(error);
+        res.send(JSON.stringify({ status: 500, error: "internal server error" }));
+        return;
+    }
+    res.send(JSON.stringify({ status: 200, error: null, response: results }));
+});
+
+
+/**
+ * GET /mealfoods
+ * retrieves last 20 transactions 
+ *
+ * @request 
+ * body:
+ *      Username
+ *      Password
+ *
+ * @response
+ *      array of [ { Date, TransactionID, TransactionCategory, RestaurantName, FoodName } ... ]
+ */
+miscRouter.get("/mealfoods", userLogin, async (req, res) => {
+    console.log(req.params);
+    let results, fields;
+    try {
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT DATE_FORMAT(TransactionDate, '%Y-%m-%d') AS Date, TransactionID, TransactionCategory, RestaurantName, FoodName \
+            FROM Transactions NATURAL JOIN Foods NATURAL JOIN Restaurants \
+            WHERE UserID = ? \
+            ORDER BY TransactionCategory",
+            [req.UserID]
         );
     } catch (error) {
         console.log(error);
