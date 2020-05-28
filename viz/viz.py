@@ -9,33 +9,76 @@
 #       # Do something with "viz.png"       # note that visualization is saved as "viz.png" in the current directory
 #       myviz.delete()                      # deletes "viz.png" from the current directory and then deletes Viz object
 #
-import json
+import re
 import pandas as pd
+import geopandas as gpd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-import geoview as gv
-import geoview.title_sources as gvts
-from geoviews import dim, opts
-gv.extension('bokeh')
-
-# Note to future Arjun - loading in json data
-# look here: https://realpython.com/python-json/#a-simple-deserialization-example
-
+# import geoviews as gv
+# import geoviews.title_sources as gvts
+# from geoviews import dim, opts
+# gv.extension('bokeh')
 
 # Constants for maps
 # get longitude, latitude
 loc_foco = [43.703022, -72.291034]
-loc_lous = [43.702674, -72.289859]
-loc_pine = [43.702224, -72.289156]
+loc_hop = []
+# loc_lous = [43.702674, -72.289859]
+# loc_pine = [43.702224, -72.289156]
 
+# JSON strings passed into viz.py
+# array of [ { RestaurantName, MoneySpent } ... ]
+# array of [ { RestaurantName, MealCount } ... ]
+# array of [ { FoodName, FoodCount } ... ]
+# array of [ { FoodName, FoodRevenue } ... ]
 
 class Viz:
     pass
 
+    # Generic object initialization
     def __init__(self):
         pass
+
+    '''
+    Function to parse JSON string and return X and Y lists representing data values.
+    Input:
+        jsonstring - JSON string with the relevant data
+        type - 'f' if float data, 'i' if int data
+    Output: 
+        X = X data (RestaurantNames or FoodNames)
+        Y = Y data (MoneySpent, MealCount, FoodCount, or FoodRevenue)
+    '''
+    def customJSONparse(self, jsonstring, type):
+
+        X = []
+        Y = []
+        
+        if (jsonstring[0] != "["):
+            print("JSON Parse error: no open bracket [")
+        else:
+            items = re.split("{",jsonstring)
+            for i in range(0,len(items)):
+                
+                attrs = re.split(",", items[i])
+                
+                for j in range(0,len(attrs)):
+                    
+                    if ((i > 0) and ((j == 0) or (j == 1))):
+                        
+                        ones = re.split("'",attrs[j])
+                        
+                        if j == 0:
+                            X.append(ones[3])
+                        elif j == 1:
+                            if type == 'f':
+                                ys = re.findall("\d+\.\d+",ones[2])
+                            else:
+                                ys = re.findall("\d+",ones[2])
+                            Y.append(ys[0])
+
+        return X,Y
 
     '''
     Function to create heatmap ("viz.png") of restaurants weighted by sum of money spent at each restaurant.
@@ -47,28 +90,11 @@ class Viz:
     # Input:
     def viz_user_spending(self, data):
 
-        # Convert JSON data to Python list (fill in later)
+        # Convert JSON data to Python list
+        X,Y = self.customJSONparse(data,'f')
 
-
-        # For now assume data is array of y, x
-        labels = data[0]
-        cost = data[1]
-        
-        # Create pandas dataframe
-        labeled_data = pd.DataFrame(cost).T
-        labeled_data.columns = labels
-
-        # set plot backgorund
-        sns.set(style="white", font_scale=.8)
-
-        # Set up the matplotlib figure
-        f, ax = plt.subplots(figsize=(15, 20))
-
-        # Generate a custom diverging colormap
-        cmap = sns.light_palette((210, 90, 60), input="husl", as_cmap=True)
-
-        #cbar_kws{"shrink": .25}
-        ax = sns.heatmap(labeled_data, cmap=cmap, linewidths=.01)
+        # Plot
+        sns.barplot(X, Y)
 
         #plt.show()
         plt.savefig('viz1.png',bbox_inches='tight')  # Save the final pie chart
@@ -86,27 +112,10 @@ class Viz:
     def viz_user_freq(self, data):
 
         # Convert JSON data to Python list (fill in later)
+        X,Y = self.customJSONparse(data,'i')
 
-
-        # For now assume data is array of y, x
-        labels = data[0]
-        freq = data[1]
-        
-        # Create pandas dataframe
-        labeled_data = pd.DataFrame(freq).T
-        labeled_data.columns = labels
-
-        # set plot backgorund
-        sns.set(style="white", font_scale=.8)
-
-        # Set up the matplotlib figure
-        f, ax = plt.subplots(figsize=(15, 20))
-
-        # Generate a custom diverging colormap
-        cmap = sns.light_palette((210, 90, 60), input="husl", as_cmap=True)
-
-        #cbar_kws{"shrink": .25}
-        ax = sns.heatmap(labeled_data, cmap=cmap, linewidths=.01)
+        # Plot
+        sns.barplot(X, Y)
 
         #plt.show()
         plt.savefig('viz2.png',bbox_inches='tight')  # Save the final pie chart
@@ -123,13 +132,10 @@ class Viz:
     '''
     def viz_rez_quantity(self, data):
 
-        # Convert JSON data to Python list (fill in later)
+        # Convert JSON data to Python list
+        labels,wedges = self.customJSONparse(data, 'i')
 
         # Consider removing foods that never have been purchased
-
-        # For now assume data is array of y, x
-        labels = data[0]
-        wedges = data[1]
 
         plt.pie(wedges, labels=labels, labeldistance=None, shadow=True, startangle=90)
         # Removed options: autopct=lambda p: '{:.1f}%'.format(round(p)) if p > 0 else ''
@@ -152,14 +158,11 @@ class Viz:
     '''
     def viz_rest_money(self, data):
 
-        # Convert JSON data to Python list (fill in later)
+        # Convert JSON data to Python list
+        labels,wedges = self.customJSONparse(data, 'f')
 
         # Consider removing foods that have zero money spent on them
-
-        # For now assume data is array of y, x
-        labels = data[0]
-        wedges = data[1]
-
+        
         plt.pie(wedges, labels=labels, labeldistance=None, shadow=True, startangle=90)
         # Removed options: autopct=lambda p: '{:.1f}%'.format(round(p)) if p > 0 else ''
         plt.axis('equal')   # Equal aspect ratio (pie drawn as a circle)
@@ -174,11 +177,17 @@ class Viz:
 
 # Testing!
 
-# Some fake data to visualize
-data_1 = [["Indian Rest 1", "Indian Rest 2", "Indian Rest 3"], [100.35,22.67,36.34]]
-data_2 = [["Indian Rest 1", "Indian Rest 2", "Indian Rest 3"], [30,25,69]]
-data_3 = [["Naan","Dosa","Paneer","Bhatura","Butter chicken","Chana masala","Chaat"],[1,5,3,4,0,2,6]]
-data_4 = [["Naan","Dosa","Paneer","Bhatura","Butter chicken","Chana masala","Chaat"],[85.30,60.25,12.53,4.56,0,40.30,20.05]]
+# Raw data to visualize
+# data_1 = [["Indian Rest 1", "Indian Rest 2", "Indian Rest 3"], [100.35,22.67,36.34]]
+# data_2 = [["Indian Rest 1", "Indian Rest 2", "Indian Rest 3"], [30,25,69]]
+# data_3 = [["Naan","Dosa","Paneer","Bhatura","Butter chicken","Chana masala","Chaat"],[1,5,3,4,0,2,6]]
+# data_4 = [["Naan","Dosa","Paneer","Bhatura","Butter chicken","Chana masala","Chaat"],[85.30,60.25,12.53,4.56,0,40.30,20.05]]
+
+# Example JSON string data to visualize
+data_1 = "[{u'RestaurantName': u'Courtyard Cafe', u'MoneySpent': 14.5}, {u'RestaurantName': u'Foco', u'MoneySpent': 7.75}]"
+data_2 = "[{u'RestaurantName': u'Courtyard Cafe', u'MealCount': 13}, {u'RestaurantName': u'Foco', u'MealCount': 20}]"
+data_3 = "[{u'FoodName': u'Pizza', u'FoodCount': 13}, {u'FoodName': u'Hamburger', u'FoodCount': 20}]"
+data_4 = "[{u'FoodName': u'Pizza Cafe', u'FoodRevenue': 13.87}, {u'FoodName': u'Hamburger', u'FoodRevenue': 84.28}]"
 
 myviz = Viz()                       # instantiate a Viz object
 myviz.viz_user_spending(data_1)     # call viz method 1
