@@ -7,7 +7,7 @@
 #       myviz = Viz()                       # instantiate a Viz object
 #       myviz.viz_user_spending(data)       # call the appropriate viz method (could use one of other three)
 #       # Do something with "viz.png"       # note that visualization is saved as "viz.png" in the current directory
-#       myviz.delete()                      # deletes "viz.png" from the current directory and then deletes Viz object
+#
 # Imports for basic visualizations
 import re
 import pandas as pd
@@ -80,11 +80,11 @@ class Viz:
         return X,Y
 
     '''
-    Function to create heatmap ("viz.png") of restaurants weighted by sum of money spent at each restaurant.
+    Function to create bar graph ("viz.png") of restaurants weighted by sum of money spent at each restaurant.
     Input: 
      X = restaurants
      Y = sum of money spent at each restaurant 
-    Output: Pie chart percent of revenue each food item brings in
+    Output: Bar graph (see above)
     '''
     # Input:
     def viz_user_spending(self, data):
@@ -94,7 +94,7 @@ class Viz:
 
         # Plot
         sns.set_palette("Paired")
-        sns.barplot(X, Y)
+        ax = sns.barplot(X, Y)
         ax.set(ylabel='Money Spent')
 
         #plt.show()
@@ -104,11 +104,11 @@ class Viz:
         return
 
     '''
-    Function to create heatmap ("viz.png") of restaurants weighted by frequency of meals at each restaurant.
+    Function to create bar graph ("viz.png") of restaurants weighted by frequency of meals at each restaurant.
     Input: 
      X = restaurants
      Y = number of meals at each restaurant 
-    Output: Pie chart percent of revenue each food item brings in
+    Output: Bar graph (above)
     '''
     def viz_user_freq(self, data):
 
@@ -180,15 +180,15 @@ class Viz:
 
         return 
 
-# Testing!
+# # Testing!
 
-# Raw data to visualize
+# # Raw data to visualize
 # data_1 = [["Indian Rest 1", "Indian Rest 2", "Indian Rest 3"], [100.35,22.67,36.34]]
 # data_2 = [["Indian Rest 1", "Indian Rest 2", "Indian Rest 3"], [30,25,69]]
 # data_3 = [["Naan","Dosa","Paneer","Bhatura","Butter chicken","Chana masala","Chaat"],[1,5,3,4,0,2,6]]
 # data_4 = [["Naan","Dosa","Paneer","Bhatura","Butter chicken","Chana masala","Chaat"],[85.30,60.25,12.53,4.56,0,40.30,20.05]]
 
-# JSON strings passed into viz.py
+# # JSON strings passed into viz.py
 # array of [ { RestaurantName, MoneySpent } ... ]
 # array of [ { RestaurantName, MealCount } ... ]
 # array of [ { FoodName, FoodCount } ... ]
