@@ -10,10 +10,11 @@
 #
 # Imports for basic visualizations
 import re
-import pandas as pd
-import numpy as np
+import matplotlib
+matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import seaborn as sns
+__name__ = "viz"
 
 # Ended up not using map-based visualizations:
 
@@ -37,8 +38,6 @@ class Viz:
     pass
 
     # Generic object initialization
-    __name__ = "viz"
-    
     def __init__(self):
         pass
 
@@ -52,33 +51,34 @@ class Viz:
         Y = Y data (MoneySpent, MealCount, FoodCount, or FoodRevenue)
     '''
     def customJSONparse(self, jsonstring, type):
-
         X = []
         Y = []
-        
         if (jsonstring[0] != "["):
             print("JSON Parse error: no open bracket [")
         else:
             items = re.split("{",jsonstring)
             for i in range(0,len(items)):
-                
                 attrs = re.split(",", items[i])
-                
                 for j in range(0,len(attrs)):
-                    
                     if ((i > 0) and ((j == 0) or (j == 1))):
-                        
                         ones = re.split("'",attrs[j])
-                        
                         if j == 0:
-                            X.append(ones[3])
+                            if type == 'r':
+                                ys = re.findall("\d+",ones[2])
+                                Y.append(ys[0])
+                            else:
+                                X.append(ones[3])
                         elif j == 1:
                             if type == 'f':
-                                ys = re.findall("\d+\.\d+",ones[2])
+                                ys = re.findall("\d+",ones[2])
+                            elif type == 'r':
+                                X.append(ones[3])
                             else:
                                 ys = re.findall("\d+",ones[2])
-                            Y.append(ys[0])
-
+                            if type != 'r':
+                                Y.append(ys[0])
+        print(X,Y)
+        # print(type(Y[0]))
         return X,Y
 
     '''
@@ -197,13 +197,13 @@ class Viz:
 # array of [ { FoodName, FoodRevenue } ... ]
 
 # # Example JSON string data to visualize
-# data_1 = "[{u'RestaurantName': u'Courtyard Cafe', u'MoneySpent': 14.5}, {u'RestaurantName': u'Foco', u'MoneySpent': 7.75}]"
+# data_1 = [{'RestaurantName': 'Courtyard Cafe', 'MoneySpent': 14.5}, {'RestaurantName': 'Foco', 'MoneySpent': 7.75}]
 # data_2 = "[{u'RestaurantName': u'Courtyard Cafe', u'MealCount': 13}, {u'RestaurantName': u'Foco', u'MealCount': 20}]"
 # data_3 = "[{u'FoodName': u'Pizza', u'FoodCount': 13}, {u'FoodName': u'Hamburger', u'FoodCount': 20}]"
 # data_4 = "[{u'FoodName': u'Pizza Cafe', u'FoodRevenue': 13.87}, {u'FoodName': u'Hamburger', u'FoodRevenue': 84.28}]"
 
 # myviz = Viz()                       # instantiate a Viz object
-# myviz.viz_user_spending(data_1)     # call viz method 1
+# # myviz.viz_user_spending(data_1)     # call viz method 1
 # myviz.viz_user_freq(data_2)         # call viz method 2
 # myviz.viz_rez_quantity(data_3)      # call viz method 3
 # myviz.viz_rest_money(data_4)        # call viz method 4
