@@ -7,14 +7,18 @@ from tkinter import ttk
 from functools import partial
 from tkcalendar import DateEntry
 from datetime import datetime as dt
+import json
+from PIL import ImageTk,Image 
+from viz import Viz
 
 #some global variables we need
 login_info = {}
-restaurants = ["Courtyard Cafe", "Foco"]
+restaurants = ["Courtyard Cafe", "Foco", "Collis Cafe", "KAF", "Novack Cafe", "Tuk Tuk", "Mollys", "Pine", "Han Fusion", "Dominos"]
 food_ID = {}
 restaurant = ""
 date = dt.today().strftime('%Y-%m-%d')
 url = "http://localhost:3000/"
+
 
 def back_selection():
     u.withdraw()
@@ -81,6 +85,7 @@ def addmeal():
     Label(u, text = "Date").grid(row = 2, column = 1)
     cal = DateEntry(u)
     cal.grid(row = 3, column = 1)
+    cal._top_cal.overrideredirect(False)
     cal.bind("<<DateEntrySelected>>", getdate)
     Button(u, text = "Add", command = addFoods).grid(row = 4, column = 0)
     Button(u, text = "Back", command = back_selection).grid(row = 4, column =1)
@@ -130,10 +135,10 @@ def meal_date(b):
         else:
             meals = resp2.json()["response"]
             c2 = Frame(d, width = 500, height = 50)
-            Label(c2, text = "Date", width = 15).grid(row = 0, column = 0)
-            Label(c2, text = "Category", width = 15).grid(row = 0, column = 1)
-            Label(c2, text = "Restaurant", width =15).grid(row = 0, column = 2)
-            Label(c2, text = "Cost", width = 15).grid(row = 0, column = 3)
+            Label(c2, text = "Date", width = 15).grid(row = 0, column = 1)
+            Label(c2, text = "Category", width = 15).grid(row = 0, column = 2)
+            Label(c2, text = "Restaurant", width =15).grid(row = 0, column = 3)
+            Label(c2, text = "Cost", width = 15).grid(row = 0, column = 4)
             c2.pack()
             container = ttk.Frame(d, width = 500)
             canvas = tk.Canvas(container, width = 500)
@@ -145,10 +150,10 @@ def meal_date(b):
             Transactionid = IntVar()
             r = 1
             for i in range(len(meals)):
-                Label(scrollable_frame, text=meals[i]["Date"], width = 15).grid(row = r, column = 0)
-                Label(scrollable_frame, text = meals[i]["MealCategory"], width = 15).grid(row = r, column = 1)
-                Label(scrollable_frame, text = meals[i]["RestaurantName"], width = 15).grid(row = r, column =2)
-                Label(scrollable_frame, text = meals[i]["Cost"], width = 15).grid(row = r, column = 3)
+                Label(scrollable_frame, text=meals[i]["Date"], width = 15).grid(row = r, column = 1)
+                Label(scrollable_frame, text = meals[i]["MealCategory"], width = 15).grid(row = r, column = 2)
+                Label(scrollable_frame, text = meals[i]["RestaurantName"], width = 15).grid(row = r, column =3)
+                Label(scrollable_frame, text = meals[i]["Cost"], width = 15).grid(row = r, column = 4)
                 r+=1
             container.pack()
             c3 = Frame(d)
@@ -174,11 +179,10 @@ def meal_date(b):
                 meal_dates = resp.json()["response"]
         c2 = Frame(d, width = 500, height = 50)
         Label(c2, text = "Fetched Data").grid(row = 0, column = 3)
-        Label(c2, text = "", width = 5).grid(row = 1, column =0)
-        Label(c2, text = "Restaurant", width = 15).grid(row = 1, column = 1)
-        Label(c2, text = "Food", width = 15).grid(row = 1, column = 2)
-        Label(c2, text = "Date", width =15).grid(row = 1, column = 3)
-        Label(c2, text = "Category", width = 15).grid(row = 1, column = 4)
+        Label(c2, text = "Restaurant", width = 13).grid(row = 1, column = 1)
+        Label(c2, text = "Food", width = 13).grid(row = 1, column = 2)
+        Label(c2, text = "Date", width =13).grid(row = 1, column = 3)
+        Label(c2, text = "Category", width = 10).grid(row = 1, column = 4)
         c2.pack()
         container = ttk.Frame(d, width = 500)
         canvas = tk.Canvas(container, width = 500)
@@ -191,10 +195,10 @@ def meal_date(b):
         r = 2
         for i in range(len(meal_dates)):
             Radiobutton(scrollable_frame,variable = Transactionid, value = meal_dates[i]["TransactionID"]).grid(row = r, column = 0)
-            Label(scrollable_frame, text=meal_dates[i]["RestaurantName"], width = 15).grid(row = r, column = 1)
-            Label(scrollable_frame, text = meal_dates[i]["FoodName"], width = 15).grid(row = r, column = 2)
-            Label(scrollable_frame, text = meal_dates[i]["Date"], width = 15).grid(row = r, column =3)
-            Label(scrollable_frame, text = meal_dates[i]["TransactionCategory"], width = 15).grid(row = r, column = 4)
+            Label(scrollable_frame, text=meal_dates[i]["RestaurantName"], width = 13).grid(row = r, column = 1)
+            Label(scrollable_frame, text = meal_dates[i]["FoodName"], width = 13).grid(row = r, column = 2)
+            Label(scrollable_frame, text = meal_dates[i]["Date"], width = 13).grid(row = r, column =3)
+            Label(scrollable_frame, text = meal_dates[i]["TransactionCategory"], width = 10).grid(row = r, column = 4)
             r+=1
         container.pack()
         c3 = Frame(d)
@@ -215,6 +219,7 @@ def get_meal():
     Label(u, text = "Date").grid(row = 0, column = 0)
     cal = DateEntry(u)
     cal.grid(row = 1, column = 0)
+    cal._top_cal.overrideredirect(False)
     cal.bind("<<DateEntrySelected>>", getdate)
     a = Radiobutton(u, text = "By Date", variable = id, value = 1)
     a.grid(row = 0, column = 1)
@@ -227,9 +232,29 @@ def get_meal():
     Button(u, text = "go", command = md).grid(row = 3, column = 0)
     Button(u, text = "Back", command = back_selection).grid(row = 3, column = 1)
 
-def data_vis():
+def data_vis_spend():
+    global img
     resp = requests.get(url+"meals/data/0", json = login_info)
-    print(str(resp.json()["response"]))
+    data1 = resp.json()["response"]
+    myviz = Viz()
+    myviz.viz_user_spending(str(data1))
+    img = ImageTk.PhotoImage(Image.open("viz.png"))  
+    data = Toplevel()
+    panel = Label(data, image = img)
+    panel.image = img
+    panel.pack()
+
+def data_vis_freq():
+    global img
+    resp = requests.get(url+"meals/data/1", json = login_info)
+    data1 = resp.json()["response"]
+    myviz2 = Viz()
+    myviz2.viz_user_freq(str(data1))
+    img = ImageTk.PhotoImage(Image.open("viz.png"))  
+    data = Toplevel()
+    panel = Label(data, image = img)
+    panel.image = img
+    panel.pack()
 
 def user_page():
     global user
@@ -240,7 +265,8 @@ def user_page():
     user.title("User Selection Page")
     Button (user, text = "Add a Meal",command = addmeal).pack(anchor = CENTER)
     Button(user, text = "View Transactions", command = get_meal).pack()
-    Button(user, text = "Data Visualization", command = data_vis).pack()
+    Button(user, text = "Data Visualization (Spending)", command = data_vis_spend).pack()
+    Button(user, text = "Data Visualization (Freq)", command = data_vis_freq).pack()
     Button(user, text = "Back", command = back_login).pack()
     
 def add_food_api():
@@ -280,7 +306,6 @@ def update_food():
     global updatefood, price
     updatefood = Toplevel()
     updatefood.geometry('400x100')
-    #do another grid of radiobuttons
     price = DoubleVar()
     Label(updatefood, text = "New Price").pack(side = LEFT)
     Entry(updatefood, textvariable = price).pack(side = LEFT)
@@ -304,7 +329,7 @@ def view_menu():
     else:
         menu_items=resp.json()["response"]
         c2 = Frame(u, width = 300, height = 50)
-        Label(c2, text = "").grid(row = 0, column = 3)
+        Label(c2, text = login_info["RestaurantName"]).grid(row = 0, column = 1)
         Label(c2, text = "", width = 3).grid(row = 1, column =0)
         Label(c2, text = "Food", width = 15).grid(row = 1, column = 1)
         Label(c2, text = "Price", width = 15).grid(row = 1, column = 2)
@@ -332,6 +357,32 @@ def view_menu():
         scrollbar.pack(side="right", fill="y")
         c3.pack()
 
+def owner_data_quantity():
+    global img
+    resp = requests.get(url+"restaurants/data/0", json = login_info)
+    data1 = resp.json()["response"]
+    print(data1)
+    myviz = Viz()
+    myviz.viz_rez_quantity(str(data1))
+    img = ImageTk.PhotoImage(Image.open("viz.png"))  
+    data = Toplevel()
+    panel = Label(data, image = img)
+    panel.image = img
+    panel.pack()
+
+def owner_data_money():
+    global img
+    resp = requests.get(url+"restaurants/data/1", json = login_info)
+    data1 = resp.json()["response"]
+    print(data1)
+    myviz = Viz()
+    myviz.viz_rest_money(str(data1))
+    img = ImageTk.PhotoImage(Image.open("viz.png"))  
+    data = Toplevel()
+    panel = Label(data, image = img)
+    panel.image = img
+    panel.pack()
+
 
 def owner_page():
     global user
@@ -341,22 +392,28 @@ def owner_page():
     user.title("Owner Selection Page")
     Button(user, text = "Add Food", command = add_food).pack()
     Button(user, text = "View Menu", command = view_menu).pack()
+    Button(user, text = "Data Visualization (Quantity)", command = owner_data_quantity).pack()
+    Button(user, text = "Data Visualization (Money)", command = owner_data_money).pack()
     Button(user, text = "Back", command = back_login).pack()
 
 
 def validate(username, password, ID, owner):
     global login_info, ID_info
     info = {"isOwnerLogin": owner, "Username": username.get(), "Password": password.get()}
-    resp = requests.get(url+"login", json=info)
-    if resp.json()['status']!= 200:
-        messagebox.showerror("Error", "Failed to login")
-    else:
-        login_info={"Username": username.get(), "Password": password.get()}
-        if info["isOwnerLogin"] == 0:
-            user_page()
+    if owner == 0:
+        resp = requests.get(url+"userlogin", json=info)
+        if resp.json()['status']!= 200:
+            messagebox.showerror("Error", "Failed to login")
         else:
-            restaurantID = resp.json()['RestaurantID']
-            login_info["RestaurantID"] = restaurantID
+            login_info={"Username": username.get(), "Password": password.get()}
+            user_page()
+    else:
+        info["RestaurantID"] = ID.get()
+        resp = requests.get(url+"ownerlogin", json = info)
+        if resp.json()['status']!= 200:
+            messagebox.showerror("Error", "Failed to login")
+        else:
+            login_info={"Username": username.get(), "Password": password.get(), "RestaurantID":resp.json()["RestaurantID"], "RestaurantName":resp.json()["RestaurantName"]}
             owner_page()
 
 def delete(u, p):
@@ -412,7 +469,6 @@ def delete2(a, b, c, d, e):
     d.delete(0, END)
     e.delete(0, END)
 
-
 def new_account():
     global log
     root.withdraw()
@@ -455,7 +511,6 @@ def new_account():
 root = tk.Tk()
 root.geometry('400x200')
 root.title("Welcome")
-
 l = Label(root, text="Welcome to our program", font = ("Times New Roman", 28)).pack()
 l2 = Label(root, text = "Please select if you would like to log in as a regular User or a Restaurant Owner or create a new account", font = ("Times New Roman", 15), wraplength = 400).pack()
 owner = BooleanVar()
