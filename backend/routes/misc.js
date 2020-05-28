@@ -8,43 +8,54 @@ miscRouter.use(bodyParser.json());
 const bcrypt = require("bcrypt");
 const saltRounds = 10;
 
-const { userLogin } = require("../modules/login");
+const { userLogin, ownerLogin } = require("../modules/login");
 const connection = require("../modules/sqlconnection");
 
 /**
- * test logging in a user or an owner, also returns the ID info for the client to store
+ * test logging in a user, also returns the ID info for the client
  *
  * @request
- *      isOwnerLogin
  *      Username
  *      Password
  *
  * @response
  *      200 if success
  *      various error codes if error
- *      UserID
- *      RestaurantID (if owner login mode)
+ *      UserID (this actually isn't necessary but is helpful)
  */
-miscRouter.get("/login", userLogin, async (req, res) => {
-    if (!req.body.isOwnerLogin) {
-        res.send(JSON.stringify({ status: 200, error: null, UserID: req.UserID }));
-        return;
-    }
+miscRouter.get("/userlogin", userLogin, async (req, res) => {
+    res.send(JSON.stringify({ status: 200, error: null, UserID: req.UserID }));
+});
+
+/**
+ * test logging in a restaurant owner,  returns UserID
+ * also returns RestaurantID and RestaurantName
+ *
+ * @request
+ *      Username
+ *      Password
+ *      RestaurantID
+ *
+ * @response
+ *      200 if success
+ *      various error codes if error
+ *      UserID (this actually isn't necessary but is helpful)
+ *      RestaurantID (also not necessary)
+ *      RestaurantName
+ */
+miscRouter.get("/ownerlogin", ownerLogin, async (req, res) => {
     let results, fields;
-    // try to pull the userID and password from the database that matches username
     try {
-        [results, fields] = await connection.execute(
-            "SELECT * FROM Restaurants WHERE OwnerID = ?",
-            [req.UserID]
+        [
+            results,
+            fields,
+        ] = await connection.execute(
+            "SELECT RestaurantName FROM Restaurants WHERE RestaurantID = ?",
+            [req.RestaurantID]
         );
     } catch (error) {
         console.log(error);
         res.send(JSON.stringify({ status: 500, error: "internal server error" }));
-        return;
-    }
-    if (results.length == 0) {
-        console.log("user not found");
-        res.send(JSON.stringify({ status: 401, error: "account not found for this restaurant" }));
         return;
     }
     res.send(
@@ -52,7 +63,8 @@ miscRouter.get("/login", userLogin, async (req, res) => {
             status: 200,
             error: null,
             UserID: req.UserID,
-            RestaurantID: results[0].RestaurantID,
+            RestaurantID: req.RestaurantID,
+            RestaurantName: results[0].RestaurantName,
         })
     );
 });
@@ -185,12 +197,11 @@ miscRouter.get("/mealfoods/:date", userLogin, async (req, res) => {
     res.send(JSON.stringify({ status: 200, error: null, response: results }));
 });
 
-
 /**
  * GET /mealfoods
- * retrieves last 20 transactions 
+ * retrieves last 20 transactions
  *
- * @request 
+ * @request
  * body:
  *      Username
  *      Password
