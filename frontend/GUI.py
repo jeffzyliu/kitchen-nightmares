@@ -227,22 +227,21 @@ def get_meal():
     Button(u, text = "go", command = md).grid(row = 3, column = 0)
     Button(u, text = "Back", command = back_selection).grid(row = 3, column = 1)
 
+def data_vis():
+    resp = requests.get(url+"meals/data/0", json = login_info)
+    print(str(resp.json()["response"]))
+
 def user_page():
     global user
     log.withdraw()
     user = Toplevel()
-    user.geometry('400x100')
+    user.geometry('400x200')
 
     user.title("User Selection Page")
     Button (user, text = "Add a Meal",command = addmeal).pack(anchor = CENTER)
     Button(user, text = "View Transactions", command = get_meal).pack()
+    Button(user, text = "Data Visualization", command = data_vis).pack()
     Button(user, text = "Back", command = back_login).pack()
-
-def addapi():
-    data = login_info.copy()
-    data["FoodName"] = name.get()
-    data["FoodPrice"] = price.get()
-    resp = reponse.get("url", json = data)
     
 def add_food_api():
     data = login_info.copy()
@@ -345,7 +344,7 @@ def owner_page():
     Button(user, text = "Back", command = back_login).pack()
 
 
-def validate(username, password, owner):
+def validate(username, password, ID, owner):
     global login_info, ID_info
     info = {"isOwnerLogin": owner, "Username": username.get(), "Password": password.get()}
     resp = requests.get(url+"login", json=info)
@@ -373,7 +372,7 @@ def login(owner):
     global login_info, log
     root.withdraw()
     log = Toplevel()
-    log.geometry('400x200')
+    log.geometry('400x300')
     log.title("User Login")
     usernameLabel = Label(log, text = "User Name").pack()
     username = StringVar()
@@ -383,9 +382,14 @@ def login(owner):
     passwordLabel = Label(log,text="Password").pack()  
     password = StringVar()
     passwordEntry = Entry(log, textvariable=password, show='*')
-    passwordEntry.pack() 
-
-    v = partial(validate, username, password, owner.get())
+    passwordEntry.pack()
+    RestaurantLabel = Label(log, text = "RestaurantID")
+    ID = IntVar()
+    if owner.get() == 1:
+        RestaurantLabel.pack()
+        IDentry = Entry(log, textvariable = ID)
+        IDentry.pack()
+    v = partial(validate, username, password, ID, owner.get())
     LoginButton = Button(log, text="Login", command=v).pack() 
     w = partial(delete, usernameEntry, passwordEntry)
     Clear = Button(log, text = "clear", command = w).pack()
