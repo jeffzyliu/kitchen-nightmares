@@ -8,14 +8,19 @@
 #       myviz.viz_user_spending(data)       # call the appropriate viz method (could use one of other three)
 #       # Do something with "viz.png"       # note that visualization is saved as "viz.png" in the current directory
 #       myviz.delete()                      # deletes "viz.png" from the current directory and then deletes Viz object
-#
+# Imports for basic visualizations
 import re
 import pandas as pd
-import geopandas as gpd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+# Ended up not using map-based visualizations:
+
+# Imports for map-based viz - 1
+# import geopandas as gpd
+
+# Imports for map-based viz - 2
 # import geoviews as gv
 # import geoviews.title_sources as gvts
 # from geoviews import dim, opts
@@ -23,16 +28,10 @@ import seaborn as sns
 
 # Constants for maps
 # get longitude, latitude
-loc_foco = [43.703022, -72.291034]
-loc_hop = []
+# loc_foco = [43.703022, -72.291034]
+# loc_hop = []
 # loc_lous = [43.702674, -72.289859]
 # loc_pine = [43.702224, -72.289156]
-
-# JSON strings passed into viz.py
-# array of [ { RestaurantName, MoneySpent } ... ]
-# array of [ { RestaurantName, MealCount } ... ]
-# array of [ { FoodName, FoodCount } ... ]
-# array of [ { FoodName, FoodRevenue } ... ]
 
 class Viz:
     pass
@@ -94,10 +93,12 @@ class Viz:
         X,Y = self.customJSONparse(data,'f')
 
         # Plot
+        sns.set_palette("Paired")
         sns.barplot(X, Y)
+        ax.set(ylabel='Money Spent')
 
         #plt.show()
-        plt.savefig('viz1.png',bbox_inches='tight')  # Save the final pie chart
+        plt.savefig('viz.png',bbox_inches='tight')  # Save the final pie chart
         plt.clf()
 
         return
@@ -115,10 +116,12 @@ class Viz:
         X,Y = self.customJSONparse(data,'i')
 
         # Plot
-        sns.barplot(X, Y)
+        sns.set_palette("Paired")
+        ax = sns.barplot(X, Y)
+        ax.set(ylabel='No. of Meals')
 
         #plt.show()
-        plt.savefig('viz2.png',bbox_inches='tight')  # Save the final pie chart
+        plt.savefig('viz.png',bbox_inches='tight')  # Save the final pie chart
         plt.clf()
 
         return
@@ -137,6 +140,7 @@ class Viz:
 
         # Consider removing foods that never have been purchased
 
+        sns.set_palette("Paired")
         plt.pie(wedges, labels=labels, labeldistance=None, shadow=True, startangle=90)
         # Removed options: autopct=lambda p: '{:.1f}%'.format(round(p)) if p > 0 else ''
         plt.axis('equal')   # Equal aspect ratio (pie drawn as a circle)
@@ -144,7 +148,7 @@ class Viz:
         plt.title("Relative quantities of each food purchased")
 
         #plt.show()
-        plt.savefig('viz3.png',bbox_inches='tight')  # Save the final pie chart
+        plt.savefig('viz.png',bbox_inches='tight')  # Save the final pie chart
         plt.clf()
 
         return 
@@ -162,7 +166,8 @@ class Viz:
         labels,wedges = self.customJSONparse(data, 'f')
 
         # Consider removing foods that have zero money spent on them
-        
+
+        sns.set_palette("Paired")
         plt.pie(wedges, labels=labels, labeldistance=None, shadow=True, startangle=90)
         # Removed options: autopct=lambda p: '{:.1f}%'.format(round(p)) if p > 0 else ''
         plt.axis('equal')   # Equal aspect ratio (pie drawn as a circle)
@@ -170,7 +175,7 @@ class Viz:
         plt.title("Share of money spent on each food")
 
         #plt.show()
-        plt.savefig('viz4.png',bbox_inches='tight')  # Save the final pie chart
+        plt.savefig('viz.png',bbox_inches='tight')  # Save the final pie chart
         plt.clf()
 
         return 
@@ -183,14 +188,20 @@ class Viz:
 # data_3 = [["Naan","Dosa","Paneer","Bhatura","Butter chicken","Chana masala","Chaat"],[1,5,3,4,0,2,6]]
 # data_4 = [["Naan","Dosa","Paneer","Bhatura","Butter chicken","Chana masala","Chaat"],[85.30,60.25,12.53,4.56,0,40.30,20.05]]
 
-# Example JSON string data to visualize
-data_1 = "[{u'RestaurantName': u'Courtyard Cafe', u'MoneySpent': 14.5}, {u'RestaurantName': u'Foco', u'MoneySpent': 7.75}]"
-data_2 = "[{u'RestaurantName': u'Courtyard Cafe', u'MealCount': 13}, {u'RestaurantName': u'Foco', u'MealCount': 20}]"
-data_3 = "[{u'FoodName': u'Pizza', u'FoodCount': 13}, {u'FoodName': u'Hamburger', u'FoodCount': 20}]"
-data_4 = "[{u'FoodName': u'Pizza Cafe', u'FoodRevenue': 13.87}, {u'FoodName': u'Hamburger', u'FoodRevenue': 84.28}]"
+# JSON strings passed into viz.py
+# array of [ { RestaurantName, MoneySpent } ... ]
+# array of [ { RestaurantName, MealCount } ... ]
+# array of [ { FoodName, FoodCount } ... ]
+# array of [ { FoodName, FoodRevenue } ... ]
 
-myviz = Viz()                       # instantiate a Viz object
-myviz.viz_user_spending(data_1)     # call viz method 1
-myviz.viz_user_freq(data_2)         # call viz method 2
-myviz.viz_rez_quantity(data_3)      # call viz method 3
-myviz.viz_rest_money(data_4)        # call viz method 4
+# # Example JSON string data to visualize
+# data_1 = "[{u'RestaurantName': u'Courtyard Cafe', u'MoneySpent': 14.5}, {u'RestaurantName': u'Foco', u'MoneySpent': 7.75}]"
+# data_2 = "[{u'RestaurantName': u'Courtyard Cafe', u'MealCount': 13}, {u'RestaurantName': u'Foco', u'MealCount': 20}]"
+# data_3 = "[{u'FoodName': u'Pizza', u'FoodCount': 13}, {u'FoodName': u'Hamburger', u'FoodCount': 20}]"
+# data_4 = "[{u'FoodName': u'Pizza Cafe', u'FoodRevenue': 13.87}, {u'FoodName': u'Hamburger', u'FoodRevenue': 84.28}]"
+
+# myviz = Viz()                       # instantiate a Viz object
+# myviz.viz_user_spending(data_1)     # call viz method 1
+# myviz.viz_user_freq(data_2)         # call viz method 2
+# myviz.viz_rez_quantity(data_3)      # call viz method 3
+# myviz.viz_rest_money(data_4)        # call viz method 4
