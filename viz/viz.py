@@ -15,8 +15,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+import geoview as gv
+import geoview.title_sources as gvts
+from geoviews import dim, opts
+gv.extension('bokeh')
+
 # Note to future Arjun - loading in json data
 # look here: https://realpython.com/python-json/#a-simple-deserialization-example
+
+
+# Constants for maps
+# get longitude, latitude
+loc_foco = [43.703022, -72.291034]
+loc_lous = [43.702674, -72.289859]
+loc_pine = [43.702224, -72.289156]
+
 
 class Viz:
     pass
